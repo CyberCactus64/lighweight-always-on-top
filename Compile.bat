@@ -9,12 +9,4 @@ if %ERRORLEVEL% neq 0 (
     exit /b %ERRORLEVEL%
 )
 
-
 echo You can now run AlwaysOnTop.exe!
-:: AlwaysOnTop.exe
-
-:: check if there are errors when running
-if %ERRORLEVEL% neq 0 (
-    echo Errore during the program execution.
-    exit /b %ERRORLEVEL%
-)
