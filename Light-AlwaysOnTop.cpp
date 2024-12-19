@@ -2,7 +2,6 @@
 #include <shellapi.h>
 #include <iostream>
 
-
 // tray bar menu options identifiers
 #define EXIT_ID 1001 // "exit" button ID
 #define OPEN_TOOL_MANAGER_ID 1002 // "open tool manager" button ID
@@ -39,53 +38,8 @@ void HandleTrayMenu(HWND hwnd, WPARAM wParam) {
     }
 }
 
-// called when the user press win + shift + t
-void SetWindowAlwaysOnTop(HWND hwnd) {
-    SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-    alwaysOnTopActivated = true;
-    InvalidateRect(hwnd, NULL, TRUE);
-}
-
-// called when the user press win + shift + y
-void RemoveWindowAlwaysOnTop(HWND hwnd) { 
-    SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-    alwaysOnTopActivated = false;
-    InvalidateRect(hwnd, NULL, TRUE);
-}
-
-// background function of the thread
-DWORD WINAPI BackgroundThread(LPVOID lpParam) {
-    // background code
-    while (true) {
-        // enable Always On Top to the current window    
-        if ((GetAsyncKeyState(VK_LWIN) & 0x8000) && (GetAsyncKeyState(VK_CONTROL) & 0x8000) && (GetAsyncKeyState('T') & 0x8000)) { // WIN + CTRL + T
-            HWND hwnd = GetForegroundWindow();
-            if (hwnd != NULL) {
-                SetWindowAlwaysOnTop(hwnd);
-                std::cout << "Window set as Always On Top." << std::endl;
-            } else {
-                std::cout << "Unable to get active window handle." << std::endl;
-            }
-        }
-        // disable Always On Top to the current window  
-        if ((GetAsyncKeyState(VK_LWIN) & 0x8000) && (GetAsyncKeyState(VK_CONTROL) & 0x8000) && (GetAsyncKeyState('Y') & 0x8000)) { // WIN + CTRL + Y
-            HWND hwnd = GetForegroundWindow();
-            if (hwnd != NULL) {
-                RemoveWindowAlwaysOnTop(hwnd);
-                std::cout << "Always On Top mode disabled." << std::endl;
-            } else {
-                std::cout << "Unable to get active window handle." << std::endl;
-            }
-        }
-        // little delay (100ms)
-        Sleep(100);
-    }
-
-    return 0;
-}
-
-// called from main() when setting window class wc (to create the tray bar menu icon)
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+// called from WinMain() when setting window class wc (to create the tray bar menu icon)
+LRESULT CALLBACK TraybarIcon(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_CREATE:
             icon_data.cbSize = sizeof(NOTIFYICONDATA);
@@ -112,22 +66,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         case WM_COMMAND:
             HandleTrayMenu(hwnd, wParam); // call the function to handle actions from the tray menu icon
             break;
-        case WM_PAINT:
-            if (alwaysOnTopActivated) {
-                PAINTSTRUCT ps;
-                HDC hdc = BeginPaint(hwnd, &ps);
-                RECT rect;
-                GetClientRect(hwnd, &rect);
-                // Set the color for the border
-                HBRUSH hBrush = CreateSolidBrush(RGB(255, 0, 0)); // Red color
-                // Draw a thicker border
-                FrameRect(hdc, &rect, hBrush); // Draw the outer border
-                InflateRect(&rect, -5, -5); // Inflate the rectangle to create a thicker border
-                FrameRect(hdc, &rect, hBrush); // Draw the inner border
-                DeleteObject(hBrush);
-                EndPaint(hwnd, &ps);
-            }
-            break;
         case WM_DESTROY:
             Shell_NotifyIcon(NIM_DELETE, &icon_data);
             PostQuitMessage(0);
@@ -138,6 +76,38 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     return 0;
 }
 
+// Toggle Always On Top status
+void ToggleWindowAlwaysOnTop(HWND hwnd) {
+    if (alwaysOnTopActivated) { // DISABLE Always On Top mode
+        SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+        alwaysOnTopActivated = false;
+    } else { // ENABLE Always On Top mode
+        SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+        alwaysOnTopActivated = true;
+    }
+    InvalidateRect(hwnd, NULL, TRUE);
+}
+
+// background function of the thread (to read from keyboard and enable/disable Always On Top)
+DWORD WINAPI BackgroundThread(LPVOID lpParam) {
+    while (true) {
+        // toggle Always On Top to the current window -> WIN + CTRL + T
+        if ((GetAsyncKeyState(VK_LWIN) & 0x8000) && (GetAsyncKeyState(VK_CONTROL) & 0x8000) && (GetAsyncKeyState('T') & 0x8000)) {
+            HWND hwnd = GetForegroundWindow();
+            if (hwnd != NULL) {
+                ToggleWindowAlwaysOnTop(hwnd);
+            } else {
+                std::cerr << "Unable to get active window handle..." << std::endl;
+            }
+            Sleep(300); // debounce to prevent multiple toggles from one keypress
+        }
+        Sleep(50);
+    }
+
+    return 0;
+}
+
+// MAIN function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nShowCmd) {
     HANDLE hThread; // to manage the thread
     hThread = CreateThread(NULL, 0, BackgroundThread, NULL, 0, NULL); // create the thread in background (call the function BackgroundThread())
@@ -148,8 +118,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nShowCmd) {
 
     // window class manage the tray bar menu icon and a lot of stuff 
     WNDCLASS wc = {};
-    wc.lpfnWndProc = WndProc;
-    wc.hInstance = hInstance; // GetModuleHandle(nullptr);
+    wc.lpfnWndProc = TraybarIcon; // see LRESULT CALLBACK TraybarIcon()
+    wc.hInstance = hInstance;
     wc.lpszClassName = "TrayWindowClass";
     RegisterClass(&wc);
 
@@ -164,7 +134,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nShowCmd) {
     BOOL bRet;
     while ((bRet = GetMessage(&msg, nullptr, 0, 0)) != 0) {
         if (bRet == -1) {
-            std::cerr << "Errore durante la ricezione del messaggio." << std::endl;
+            std::cerr << "Failure to receive the message..." << std::endl;
             break;
         } else {
             TranslateMessage(&msg);
