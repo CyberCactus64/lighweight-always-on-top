@@ -1,8 +1,8 @@
 # Simple and Lightweight alternative to AlwaysOnTop from Powertoys (by Microsoft), written in C++ :)
 
 ### HOW TO RUN:
- - Easily compile the code with: `./Compile.bat`
- - It only compiles the main program (Light-AlwaysOnTop.cpp) not the testing version (Tests.cpp)
+ - Run `AlwaysOnTop.exe`
+ - If you change something, you can easily re-compile the code with: `./Compile.bat`
 
 ### HOW TO USE:
  - Press __WIN + CTRL + T__ on the active window to enable/disable Always On Top on it!
