@@ -1,7 +1,7 @@
 # Simple and Lightweight alternative to AlwaysOnTop from Powertoys (by Microsoft), written in C++ :)
 
 ### HOW TO RUN:
- - Compile and run the code with: `./Compile.bat`
+ - Easily compile the code with: `./Compile.bat`
  - It only compiles the main program (Light-AlwaysOnTop.cpp) not the testing version (Tests.cpp)
 
 ### HOW TO USE:
