@@ -1,17 +1,17 @@
-# Simple and lightweight alternative to AlwaysOnTop from Powertoys (by Microsoft), written in C++ :)
+# Simple and Lightweight alternative to AlwaysOnTop from Powertoys (by Microsoft), written in C++ :)
 
 ### HOW TO RUN:
- - Compile and run the code with: `./compile-run.bat"`
- - It compiles and run the main program (simple-AlwaysOnTop.cpp) not the testing version (tests.cpp)
+ - Compile and run the code with: `./Compile.bat`
+ - It only compiles the main program (Light-AlwaysOnTop.cpp) not the testing version (Tests.cpp)
 
 ### HOW TO USE:
- - Press __WIN + CTRL + T__ on the active window to keep it in the foreground (__turn on AlwaysOnTop mode__)
- - Press __WIN + CTRL + Y__ on the active window to __turn off AlwaysOnTop mode__
+ - Press __WIN + CTRL + T__ on the active window to enable/disable Always On Top on it!
 
 ---
 
 ### FUTURE UPDATES:
  - Add colored borders for the active window
+ - When the user clicks on "Exit", every window set as Always on top lose this feature 
  - Simple management application where the user can change stuff like the borders color, shortcuts and exceptions
 
 ---
