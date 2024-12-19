@@ -10,7 +10,7 @@ if %ERRORLEVEL% neq 0 (
 )
 
 
-echo You can now run AlwaysOnTop.exe to use Always On Top!
+echo You can now run AlwaysOnTop.exe!
 :: AlwaysOnTop.exe
 
 :: check if there are errors when running
