@@ -1,19 +1,20 @@
 @echo off
 
-echo Compilazione iniziata...
-g++ simple-AlwaysOnTop.cpp -o simple-AOT.exe
+echo Compilation started...
+g++ Light-AlwaysOnTop.cpp -o "AlwaysOnTop.exe" -mwindows
 
-:: Verifica se la compilazione è andata a buon fine
+:: check if there are errors during compilation
 if %ERRORLEVEL% neq 0 (
-    echo Errore nella compilazione.
+    echo Error during compilation.
     exit /b %ERRORLEVEL%
 )
 
-echo Esecuzione codice...
-simple-AOT.exe
 
-:: Verifica se l'esecuzione è andata a buon fine
+echo You can now run AlwaysOnTop.exe to use Always On Top!
+:: AlwaysOnTop.exe
+
+:: check if there are errors when running
 if %ERRORLEVEL% neq 0 (
-    echo Errore durante l'esecuzione del programma.
+    echo Errore during the program execution.
     exit /b %ERRORLEVEL%
 )
